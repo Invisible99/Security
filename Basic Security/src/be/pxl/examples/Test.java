@@ -16,7 +16,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.binary.Base64;
+//import org.apache.commons.codec.binary.Base64;
 
 public class Test {
 
@@ -37,13 +37,13 @@ public class Test {
 		PublicKey publicKey = keyPair.getPublic();
 
 		// Encrypt Data by symmetric key
-		String encryptedData = encryptWithAESKey("Een hele lange zin die geen betekenis heeft LOL.", symmetricKey);
-		System.out.println("Encrypted Data : " + encryptedData);
+		//String encryptedData = encryptWithAESKey("Een hele lange zin die geen betekenis heeft LOL.", symmetricKey);
+		//System.out.println("Encrypted Data : " + encryptedData);
 
 		// Encrypt symmetric key by public key
 		Cipher cipher = Cipher.getInstance("RSA");
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-		String encryptedkey = Base64.encodeBase64String(cipher.doFinal(symmetricKey));
+		//String encryptedkey = Base64.encodeBase64String(cipher.doFinal(symmetricKey));
 
 		// Send message and key to other user having private key
 
@@ -51,14 +51,14 @@ public class Test {
 		Cipher dipher = Cipher.getInstance("RSA");
 
 		dipher.init(Cipher.DECRYPT_MODE, privateKey);
-		byte[] decryptedSymmetricKey = dipher.doFinal(Base64.decodeBase64(encryptedkey));
+		//byte[] decryptedSymmetricKey = dipher.doFinal(Base64.decodeBase64(encryptedkey));
 
 		// Decrypt encrypted Data by decrypted symmetric key
-		System.out.println("Decrypted Data : " + decryptWithAESKey(encryptedData, decryptedSymmetricKey));
+		//System.out.println("Decrypted Data : " + decryptWithAESKey(encryptedData, decryptedSymmetricKey));
 
 	}
 
-	public static String encryptWithAESKey(String data, byte[] key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+	/*public static String encryptWithAESKey(String data, byte[] key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
 		SecretKey secKey = new SecretKeySpec(key, "AES");
 
@@ -67,10 +67,10 @@ public class Test {
 		cipher.init(Cipher.ENCRYPT_MODE, secKey);
 		byte[] newData = cipher.doFinal(data.getBytes());
 
-		return Base64.encodeBase64String(newData);
-	}
+		//return Base64.encodeBase64String(newData);
+	}*/
 
-	public static String decryptWithAESKey(String inputData, byte[] key) throws NoSuchAlgorithmException, NoSuchPaddingException,
+	/*public static String decryptWithAESKey(String inputData, byte[] key) throws NoSuchAlgorithmException, NoSuchPaddingException,
 			InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		Cipher cipher = Cipher.getInstance("AES");
 		SecretKey secKey = new SecretKeySpec(key, "AES");
@@ -79,6 +79,6 @@ public class Test {
 		byte[] newData = cipher.doFinal(Base64.decodeBase64(inputData.getBytes()));
 		return new String(newData);
 
-	}
+	}*/
 
 }

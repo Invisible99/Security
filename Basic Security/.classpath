@@ -2,7 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="keys"/>
+	<classpathentry kind="src" path="libs"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="E:/Programs/Eclipse/data/workspace2/Basic Security/libs/local_policy.jar"/>
+	<classpathentry kind="lib" path="E:/Programs/Eclipse/data/workspace2/Basic Security/libs/US_export_policy.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
