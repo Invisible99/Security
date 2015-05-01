@@ -33,7 +33,6 @@ public class StegaImgMethodDecryptFrame {
 	private JFileChooser fileChooser;
 
 	private String imageName;
-	private String textFileName;
 
 	public StegaImgMethodDecryptFrame() {
 

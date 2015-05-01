@@ -28,6 +28,7 @@ public class Decrypt {
 
 	// Files
 	private File file1;
+	private File decrFile;
 
 	// Cipher
 	private Cipher pkCipher;
@@ -51,6 +52,7 @@ public class Decrypt {
 	private SecretKey key;
 	
 	//Decrypted hash
+	private String hash;
 	private String dHash;
 
 	//Constructor
@@ -67,7 +69,9 @@ public class Decrypt {
 		readKeys(publicKeyName, privateKeyName);
 		decryptAES(file2Name);
 		decryptFile(file1);
+		generateHash(decrFile.getAbsolutePath());
 		decryptHash(file3Name, publicKeyName);
+		compareHash();
 	}
 
 	@SuppressWarnings("resource")
@@ -103,7 +107,8 @@ public class Decrypt {
 		//Constructs a CipherInputStream from an InputStream and a Cipher. 
 		CipherInputStream is = new CipherInputStream(new FileInputStream(System.getProperty("user.home") + "/documents/Security App Files/Encrypted Files/File_1." + file.getPath().substring(dot + 1)), aesCipher);
 		FileOutputStream os = new FileOutputStream(System.getProperty("user.home") + "/documents/Security App Files/Decrypted Files/File_1." + file.getPath().substring(dot + 1));
-
+		decrFile = new File(System.getProperty("user.home") + "/documents/Security App Files/Decrypted Files/File_1." + file.getPath().substring(dot + 1));
+		
 		int i;
 		byte[] b = new byte[1024];
 		while ((i = is.read(b)) != -1) {
@@ -131,6 +136,37 @@ public class Decrypt {
 		//System.out.println("AES encrypted");
 		is.close();
 	}
+	
+	@SuppressWarnings("resource")
+	// Method generates a hash of the file you're encrypting
+	// (tested and works)
+	public String generateHash(String datafile) {
+		StringBuffer sb = new StringBuffer("");
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			FileInputStream fis = new FileInputStream(datafile);
+			byte[] dataBytes = new byte[1024];
+
+			int nread = 0;
+
+			while ((nread = fis.read(dataBytes)) != -1) {
+				md.update(dataBytes, 0, nread);
+			}
+
+			byte[] mdbytes = md.digest();
+
+			// convert the byte to hex format
+
+			for (int i = 0; i < mdbytes.length; i++) {
+				sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+			}
+			hash = sb.toString();
+			System.out.println("Digest(in hex format):: " + hash);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
+	}
 
 	// Method decrypts the hash
 	// (tested and works)
@@ -147,7 +183,15 @@ public class Decrypt {
 		dHash = new String(hashKey);
 		
 		//System.out.println("Hash decrypted");
-		//System.out.println("Digest(in hex format):: " + dHash);
+		System.out.println("Digest(in hex format):: " + dHash);
 		is.close();
+	}
+	
+	public void compareHash() {
+		if (hash.equals(dHash)) {
+			System.out.println("Hash of file is authentic");
+		} else {
+			System.out.println("Fuck you");
+		}
 	}
 }

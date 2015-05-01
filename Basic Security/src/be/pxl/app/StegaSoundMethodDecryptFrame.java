@@ -109,7 +109,7 @@ public class StegaSoundMethodDecryptFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == soundChooserBtn) {
-				fileChooser = new JFileChooser();
+				fileChooser = new JFileChooser(System.getProperty("user.home") + "/documents/Security App Files/Encrypted Steganography Files/");
 				FileFilter imageFilter = new FileNameExtensionFilter("Audio files", "au");
 				fileChooser.setFileFilter(imageFilter);
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());

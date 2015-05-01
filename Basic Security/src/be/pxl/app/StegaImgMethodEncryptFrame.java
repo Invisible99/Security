@@ -126,7 +126,7 @@ public class StegaImgMethodEncryptFrame {
 			
 			if (e.getSource() == textFileChooserBtn) {
 				fileChooser = new JFileChooser();
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt", "text");
 				fileChooser.setFileFilter(filter);
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
