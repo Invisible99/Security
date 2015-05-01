@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 @SuppressWarnings("serial")
 public class AppFrame extends JFrame {
 
+	//Setting a fixed width and height
 	private static final int WIDTH = 640;
 	private static final int HEIGHT = 480;
 

@@ -44,7 +44,7 @@ public class Encrypt {
 	private Cipher pkCipher;
 	private Cipher aesCipher;
 
-	//Private and public key
+	// Private and public key
 	private PublicKey pub;
 	private PrivateKey priv;
 
@@ -54,10 +54,10 @@ public class Encrypt {
 	public Encrypt(String fileName, String publicKey, String privateKey) throws GeneralSecurityException, IOException {
 		// create RSA public key cipher
 		pkCipher = Cipher.getInstance("RSA");
-		
+
 		// create AES shared key cipher
 		aesCipher = Cipher.getInstance("AES");
-		
+
 		file = new File(fileName);
 		readKeys(publicKey, privateKey);
 		generateAES();
@@ -81,9 +81,9 @@ public class Encrypt {
 			inputStream = new ObjectInputStream(new FileInputStream(privateKeyPath));
 			priv = (PrivateKey) inputStream.readObject();
 
-			System.out.println("Keys loaded");
-			System.out.println("Public Key: " + pub);
-			System.out.println("Private Key: " + priv);
+			// System.out.println("Keys loaded");
+			// System.out.println("Public Key: " + pub);
+			// System.out.println("Private Key: " + priv);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -92,12 +92,21 @@ public class Encrypt {
 	// Method generates AES session key and stores it in a SecretKey variable
 	// (tested and works)
 	public void generateAES() throws NoSuchAlgorithmException {
+		// Returns a KeyGenerator object that generates secret keys for the specified algorithm.
 		KeyGenerator kgen = KeyGenerator.getInstance("AES");
+		
+		// Initializes this key generator for a certain keysize.
 		kgen.init(AES_Key_Size);
+		
+		// Generates a secret key.
 		key = kgen.generateKey();
+		
+		// Returns the key in its primary encoding format, or null if this key does not support encoding.
 		aesKey = key.getEncoded();
+		
+		// Constructs a secret key from the given byte array.
 		aeskeySpec = new SecretKeySpec(aesKey, "AES");
-		System.out.println("AES: " + key);
+		// System.out.println("AES: " + key);
 	}
 
 	// Method encrypts file using AES key
@@ -114,7 +123,7 @@ public class Encrypt {
 		while ((i = is.read(b)) != -1) {
 			os.write(b, 0, i);
 		}
-		System.out.println("File encrypted");
+		//System.out.println("File encrypted");
 		is.close();
 		os.close();
 	}
@@ -125,7 +134,7 @@ public class Encrypt {
 		pkCipher.init(Cipher.ENCRYPT_MODE, pub);
 		CipherOutputStream os = new CipherOutputStream(new FileOutputStream(ENCRYPTED_SYMMETRIC), pkCipher);
 		os.write(aesKey);
-		System.out.println("AES encrypted");
+		//System.out.println("AES encrypted");
 		os.close();
 	}
 
@@ -152,7 +161,7 @@ public class Encrypt {
 			for (int i = 0; i < mdbytes.length; i++) {
 				sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
 			}
-			System.out.println("Digest(in hex format):: " + sb.toString());
+			//System.out.println("Digest(in hex format):: " + sb.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -166,7 +175,7 @@ public class Encrypt {
 		hashKey = hash.getBytes();
 		CipherOutputStream os = new CipherOutputStream(new FileOutputStream(ENCRYPTED_HASH), pkCipher);
 		os.write(hashKey);
-		System.out.println("Hash encrypted");
+		//System.out.println("Hash encrypted");
 		os.close();
 	}
 }
