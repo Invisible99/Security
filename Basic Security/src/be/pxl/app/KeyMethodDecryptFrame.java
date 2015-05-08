@@ -8,16 +8,11 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -49,6 +44,10 @@ public class KeyMethodDecryptFrame {
 	private String file3Name;
 	private String publicKeyName;
 	private String privateKeyName;
+	
+	//Error Strings
+	private String errorMsg;
+	private String errorTitle;
 
 	public KeyMethodDecryptFrame() {
 
@@ -159,7 +158,8 @@ public class KeyMethodDecryptFrame {
 						file1Name = file.toString();
 						file1ChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing file 1" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
 			}
@@ -173,7 +173,8 @@ public class KeyMethodDecryptFrame {
 						file2Name = file.toString();
 						file2ChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing file 2" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
 			}
@@ -187,7 +188,8 @@ public class KeyMethodDecryptFrame {
 						file3Name = file.toString();
 						file3ChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing file 3" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
 			}
@@ -201,7 +203,8 @@ public class KeyMethodDecryptFrame {
 						publicKeyName = file.toString();
 						publicKeyChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing public key file" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
 			} 
@@ -215,21 +218,49 @@ public class KeyMethodDecryptFrame {
 						privateKeyName = file.toString();
 						privateKeyChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing private key file" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
 			}
 			
 			if (e.getSource() == okBtn) {
 				if (file1Name == null || file2Name == null || file3Name == null || publicKeyName == null || privateKeyName == null) {					
-					System.out.println("Add all files");
+					//System.out.println("Add all files");
+					JOptionPane.showMessageDialog(null, "Add all needed files", "File error", JOptionPane.ERROR_MESSAGE);
 				} else {
 					try {
-						new Decrypt(file1Name, file2Name, file3Name, publicKeyName, privateKeyName);
+						Decrypt decrypt = new Decrypt(file1Name);
+						
+						errorTitle = "Reading keys error";
+						errorMsg = "Failed to read public and private keys, make sure you have the right key files";
+						decrypt.readKeys(publicKeyName, privateKeyName);
+						
+						errorTitle = "Decrypting AES error";
+						errorMsg = "Failed to decrypt AES";
+						decrypt.decryptAES(file2Name);
+						
+						errorTitle = "Decrypting file error";
+						errorMsg = "Failed to decrypt file";
+						decrypt.decryptFile();
+						
+						errorTitle = "Generate hash error";
+						errorMsg = "Failed to generate hash from decrypted file";
+						decrypt.generateHash();
+						
+						errorTitle = "Decrypt hash error";
+						errorMsg = "Failed to decrypt hash";
+						decrypt.decryptHash(file3Name, publicKeyName);
+						
+						errorTitle = "Compare hash error";
+						errorMsg = "Failed to compare hashes";
+						decrypt.compareHash();
+						
 						frame.dispose();
 						new BeginFrame();
-					} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | IOException e1) {
-						e1.printStackTrace();
+					} catch (Exception e1) {
+						JOptionPane.showMessageDialog(null, errorMsg, errorTitle, JOptionPane.ERROR_MESSAGE);
+						//e1.printStackTrace();
 					}
 				}
 			}

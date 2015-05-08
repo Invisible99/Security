@@ -2,25 +2,22 @@ package be.pxl.app;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.swing.JOptionPane;
 
 public class Encrypt {
 
@@ -47,11 +44,15 @@ public class Encrypt {
 	// Private and public key
 	private PublicKey pub;
 	private PrivateKey priv;
+	
+	//Error Strings
+	//private String errorMsg;
+	//private String errorTitle;
 
 	// SecretKeySpec
 	private SecretKeySpec aeskeySpec;
-
-	public Encrypt(String fileName, String publicKey, String privateKey) throws GeneralSecurityException, IOException {
+	
+	public Encrypt(String fileName) throws NoSuchAlgorithmException, NoSuchPaddingException {
 		// create RSA public key cipher
 		pkCipher = Cipher.getInstance("RSA");
 
@@ -59,34 +60,25 @@ public class Encrypt {
 		aesCipher = Cipher.getInstance("AES");
 
 		file = new File(fileName);
-		readKeys(publicKey, privateKey);
-		generateAES();
-		encryptFile(file);
-		encryptAES();
-		encryptHash(generateHash(fileName), privateKey);
 	}
 
 	@SuppressWarnings("resource")
 	// Method reads public and private key and stores them in the variables
 	// (tested and works)
-	public void readKeys(String publicKeyPath, String privateKeyPath) {
-		try {
-			ObjectInputStream inputStream = null;
+	public void readKeys(String publicKeyPath, String privateKeyPath) throws IOException, ClassNotFoundException {
+		ObjectInputStream inputStream = null;
 
-			// Read the public key
-			inputStream = new ObjectInputStream(new FileInputStream(publicKeyPath));
-			pub = (PublicKey) inputStream.readObject();
+		// Read the public key
+		inputStream = new ObjectInputStream(new FileInputStream(publicKeyPath));
+		pub = (PublicKey) inputStream.readObject();
 
-			// Read the private key
-			inputStream = new ObjectInputStream(new FileInputStream(privateKeyPath));
-			priv = (PrivateKey) inputStream.readObject();
+		// Read the private key
+		inputStream = new ObjectInputStream(new FileInputStream(privateKeyPath));
+		priv = (PrivateKey) inputStream.readObject();
 
-			// System.out.println("Keys loaded");
-			// System.out.println("Public Key: " + pub);
-			// System.out.println("Private Key: " + priv);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// System.out.println("Keys loaded");
+		// System.out.println("Public Key: " + pub);
+		// System.out.println("Private Key: " + priv);
 	}
 
 	// Method generates AES session key and stores it in a SecretKey variable
@@ -94,16 +86,16 @@ public class Encrypt {
 	public void generateAES() throws NoSuchAlgorithmException {
 		// Returns a KeyGenerator object that generates secret keys for the specified algorithm.
 		KeyGenerator kgen = KeyGenerator.getInstance("AES");
-		
+
 		// Initializes this key generator for a certain keysize.
 		kgen.init(AES_Key_Size);
-		
+
 		// Generates a secret key.
 		key = kgen.generateKey();
-		
+
 		// Returns the key in its primary encoding format, or null if this key does not support encoding.
 		aesKey = key.getEncoded();
-		
+
 		// Constructs a secret key from the given byte array.
 		aeskeySpec = new SecretKeySpec(aesKey, "AES");
 		// System.out.println("AES: " + key);
@@ -111,11 +103,12 @@ public class Encrypt {
 
 	// Method encrypts file using AES key
 	// (tested and works)
-	public void encryptFile(File file) throws IOException, InvalidKeyException {
+	public void encryptFile() throws IOException, InvalidKeyException {
 		int dot = file.getPath().lastIndexOf(".");
 		aesCipher.init(Cipher.ENCRYPT_MODE, aeskeySpec);
 
-		FileInputStream is = new FileInputStream(file.getAbsolutePath());
+		FileInputStream is;
+		is = new FileInputStream(file.getAbsolutePath());
 		CipherOutputStream os = new CipherOutputStream(new FileOutputStream(System.getProperty("user.home") + "/documents/Security App Files/Encrypted Files/File_1." + file.getPath().substring(dot + 1)), aesCipher);
 
 		int i;
@@ -123,7 +116,7 @@ public class Encrypt {
 		while ((i = is.read(b)) != -1) {
 			os.write(b, 0, i);
 		}
-		//System.out.println("File encrypted");
+		// System.out.println("File encrypted");
 		is.close();
 		os.close();
 	}
@@ -134,8 +127,8 @@ public class Encrypt {
 		pkCipher.init(Cipher.ENCRYPT_MODE, pub);
 		CipherOutputStream os = new CipherOutputStream(new FileOutputStream(ENCRYPTED_SYMMETRIC), pkCipher);
 		os.write(aesKey);
-		//System.out.println("AES encrypted");
 		os.close();
+		// System.out.println("AES encrypted");
 	}
 
 	@SuppressWarnings("resource")
@@ -161,21 +154,22 @@ public class Encrypt {
 			for (int i = 0; i < mdbytes.length; i++) {
 				sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
 			}
-			//System.out.println("Digest(in hex format):: " + sb.toString());
+			// System.out.println("Digest(in hex format):: " + sb.toString());
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Failed to generate hash for file", "Hash generation error", JOptionPane.ERROR_MESSAGE);
+			// e.printStackTrace();
 		}
 		return sb.toString();
 	}
 
 	// Method encrypts the hash
 	// (tested and works)
-	public void encryptHash(String hash, String privateKeyFile) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, FileNotFoundException, IOException {
+	public void encryptHash(String hash, String privateKeyFile) throws InvalidKeyException, IOException {
 		pkCipher.init(Cipher.ENCRYPT_MODE, priv);
 		hashKey = hash.getBytes();
 		CipherOutputStream os = new CipherOutputStream(new FileOutputStream(ENCRYPTED_HASH), pkCipher);
 		os.write(hashKey);
-		//System.out.println("Hash encrypted");
 		os.close();
+		// System.out.println("Hash encrypted");
 	}
 }

@@ -9,10 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -110,7 +110,7 @@ public class StegaImgMethodEncryptFrame {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == imageChooserBtn) {
 				fileChooser = new JFileChooser();
-				FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
+				FileFilter imageFilter = new FileNameExtensionFilter("Image files", "png", "gif", "bmp", "PNG", "GIF", "BMP");
 				fileChooser.setFileFilter(imageFilter);
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -119,11 +119,12 @@ public class StegaImgMethodEncryptFrame {
 						imageName = file.toString();
 						imageChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing image file" + file.getAbsolutePath(), "Image error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
-			} 
-			
+			}
+
 			if (e.getSource() == textFileChooserBtn) {
 				fileChooser = new JFileChooser();
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt", "text");
@@ -135,19 +136,35 @@ public class StegaImgMethodEncryptFrame {
 						textFileName = file.toString();
 						textFileChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing txt file" + file.getAbsolutePath(), "Txt error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
-			} 
-			
+			}
+
 			if (e.getSource() == okBtn) {
-				if (imageName == null || textFileName == null) {					
-					System.out.println("Add all files");
+				if (imageName == null || textFileName == null) {
+					// System.out.println("Add all files");
+					JOptionPane.showMessageDialog(null, "Add all needed files", "File error", JOptionPane.ERROR_MESSAGE);
 				} else {
-					Steganography stega = new Steganography();
-					stega.hide(textFileName, imageName);
-					frame.dispose();
-					new BeginFrame();
+					try {
+						Steganography stega = new Steganography();
+						if (stega.isImage(imageName)) {
+							if (stega.isTxt(textFileName)) {
+								stega.hide(textFileName, imageName);
+
+								JOptionPane.showMessageDialog(null, "Hiding text in image successful", "Encryption message", JOptionPane.PLAIN_MESSAGE);
+								frame.dispose();
+								new BeginFrame();
+							} else {
+								JOptionPane.showMessageDialog(null, "File chosen is not a text file with extension '.txt'", "Text error", JOptionPane.ERROR_MESSAGE);
+							}
+						} else {
+							JOptionPane.showMessageDialog(null, "File chosen is not an image with extension '.png, .gif or .bmp'", "Image error", JOptionPane.ERROR_MESSAGE);
+						}
+					} catch (Exception e1) {
+						JOptionPane.showMessageDialog(null, "Failed to encrypt message in image", "Encryption error", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		}

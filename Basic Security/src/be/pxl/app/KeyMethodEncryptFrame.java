@@ -8,12 +8,11 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -39,6 +38,10 @@ public class KeyMethodEncryptFrame {
 	private String fileName;
 	private String publicKeyName;
 	private String privateKeyName;
+	
+	//Error Strings
+	private String errorMsg;
+	private String errorTitle;
 
 	public KeyMethodEncryptFrame() {
 
@@ -130,11 +133,12 @@ public class KeyMethodEncryptFrame {
 						fileName = file.toString();
 						fileChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing file" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
-			} 
-			
+			}
+
 			if (e.getSource() == publicKeyChooserBtn) {
 				fileChooser = new JFileChooser(System.getProperty("user.home") + "/documents/Security App Files/Keys");
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());
@@ -144,11 +148,12 @@ public class KeyMethodEncryptFrame {
 						publicKeyName = file.toString();
 						publicKeyChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing public key file" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
-			} 
-			
+			}
+
 			if (e.getSource() == privateKeyChooserBtn) {
 				fileChooser = new JFileChooser(System.getProperty("user.home") + "/documents/Security App Files/Keys");
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());
@@ -158,21 +163,45 @@ public class KeyMethodEncryptFrame {
 						privateKeyName = file.toString();
 						privateKeyChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing private key file" + file.getAbsolutePath(), "File error", JOptionPane.ERROR_MESSAGE);
+						//System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
 			}
-			
+
 			if (e.getSource() == okBtn) {
-				if (fileName == null || publicKeyName == null || privateKeyName == null) {					
-					System.out.println("Add all files");
+				if (fileName == null || publicKeyName == null || privateKeyName == null) {
+					//System.out.println("Add all files");
+					JOptionPane.showMessageDialog(null, "Add all needed files", "File error", JOptionPane.ERROR_MESSAGE);
 				} else {
 					try {
-						new Encrypt(fileName, publicKeyName, privateKeyName);
+						Encrypt encrypt  = new Encrypt(fileName);
+						errorTitle = "Reading keys error";
+						errorMsg = "Failed to read public and private keys, make sure you have the right key files";
+						encrypt.readKeys(publicKeyName, privateKeyName);
+						
+						errorTitle = "Generating AES key error";
+						errorMsg = "Failed to generate an AES key";
+						encrypt.generateAES();
+						
+						errorTitle = "Encrypting file error";
+						errorMsg = "Failed to encrypt file";
+						encrypt.encryptFile();
+						
+						errorTitle = "Encrypting AES error";
+						errorMsg = "Failed to encrypt AES key";
+						encrypt.encryptAES();
+						
+						errorTitle = "Encrypting hash error";
+						errorMsg = "Failed to encrypt hash";
+						encrypt.encryptHash(encrypt.generateHash(fileName), privateKeyName);
+
+						JOptionPane.showMessageDialog(null, "Encrypting successful", "Encrypt message", JOptionPane.PLAIN_MESSAGE);
 						frame.dispose();
 						new BeginFrame();
-					} catch (GeneralSecurityException | IOException e1) {
-						e1.printStackTrace();
+					} catch (Exception e1) {
+						JOptionPane.showMessageDialog(null, errorMsg, errorTitle, JOptionPane.ERROR_MESSAGE);
+						//e1.printStackTrace();
 					}
 				}
 			}

@@ -2,7 +2,6 @@ package be.pxl.app;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,10 +18,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.swing.JOptionPane;
 
 public class Decrypt {
 
-	//Output file paths
+	// Output file paths
 	public final String ENCRYPTED_SYMMETRIC = System.getProperty("user.home") + "/documents/Security App Files/Encrypted Files/File_2";
 	public final String ENCRYPTED_HASH = System.getProperty("user.home") + "/documents/Security App Files/Encrypted Files/File_3";
 
@@ -49,72 +49,63 @@ public class Decrypt {
 	private byte[] hashKey;
 
 	// Secret Key
+	@SuppressWarnings("unused")
 	private SecretKey key;
-	
-	//Decrypted hash
+
+	// Decrypted hash
 	private String hash;
 	private String dHash;
 
-	//Constructor
-	public Decrypt(String file1Name, String file2Name, String file3Name, String publicKeyName, String privateKeyName) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IOException, IllegalBlockSizeException, BadPaddingException {
+	// Constructor
+	public Decrypt(String file1Name) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IOException, IllegalBlockSizeException,
+			BadPaddingException {
 		// create RSA public key cipher
 		pkCipher = Cipher.getInstance("RSA");
 
 		// create AES shared key cipher
 		aesCipher = Cipher.getInstance("AES");
 
-		//Sets file1 variable to a new file with path file1name
-		this.file1 = new File(file1Name);
-
-		readKeys(publicKeyName, privateKeyName);
-		decryptAES(file2Name);
-		decryptFile(file1);
-		generateHash(decrFile.getAbsolutePath());
-		decryptHash(file3Name, publicKeyName);
-		compareHash();
+		// Sets file1 variable to a new file with path file1name
+		file1 = new File(file1Name);
 	}
 
 	@SuppressWarnings("resource")
 	// Method reads public and private key and stores them in the variables
 	// (tested and works)
-	public void readKeys(String publicKeyPath, String privateKeyPath) {
-		try {
-			ObjectInputStream inputStream = null;
+	public void readKeys(String publicKeyPath, String privateKeyPath) throws ClassNotFoundException, IOException {
+		ObjectInputStream inputStream = null;
 
-			// Read the public key
-			inputStream = new ObjectInputStream(new FileInputStream(publicKeyPath));
-			pub = (PublicKey) inputStream.readObject();
+		// Read the public key
+		inputStream = new ObjectInputStream(new FileInputStream(publicKeyPath));
+		pub = (PublicKey) inputStream.readObject();
 
-			// Read the private key
-			inputStream = new ObjectInputStream(new FileInputStream(privateKeyPath));
-			priv = (PrivateKey) inputStream.readObject();
+		// Read the private key
+		inputStream = new ObjectInputStream(new FileInputStream(privateKeyPath));
+		priv = (PrivateKey) inputStream.readObject();
 
-			System.out.println("Keys loaded");
-			System.out.println("Public Key: " + pub);
-			System.out.println("Private Key: " + priv);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		//System.out.println("Keys loaded");
+		//System.out.println("Public Key: " + pub);
+		//System.out.println("Private Key: " + priv);
 	}
 
 	// Method decrypts file using AES key (if having the right one)
 	// (tested and works)
-	public void decryptFile(File file) throws IOException, InvalidKeyException {
-		//Get the index of the last "." at the end of the file path -> to get the extension easier
-		int dot = file.getPath().lastIndexOf(".");
+	public void decryptFile() throws IOException, InvalidKeyException {
+		// Get the index of the last "." at the end of the file path -> to get the extension easier
+		int dot = file1.getPath().lastIndexOf(".");
 		aesCipher.init(Cipher.DECRYPT_MODE, aeskeySpec);
 
-		//Constructs a CipherInputStream from an InputStream and a Cipher. 
-		CipherInputStream is = new CipherInputStream(new FileInputStream(System.getProperty("user.home") + "/documents/Security App Files/Encrypted Files/File_1." + file.getPath().substring(dot + 1)), aesCipher);
-		FileOutputStream os = new FileOutputStream(System.getProperty("user.home") + "/documents/Security App Files/Decrypted Files/File_1." + file.getPath().substring(dot + 1));
-		decrFile = new File(System.getProperty("user.home") + "/documents/Security App Files/Decrypted Files/File_1." + file.getPath().substring(dot + 1));
-		
+		// Constructs a CipherInputStream from an InputStream and a Cipher.
+		CipherInputStream is = new CipherInputStream(new FileInputStream(System.getProperty("user.home") + "/documents/Security App Files/Encrypted Files/File_1." + file1.getPath().substring(dot + 1)), aesCipher);
+		FileOutputStream os = new FileOutputStream(System.getProperty("user.home") + "/documents/Security App Files/Decrypted Files/File_1." + file1.getPath().substring(dot + 1));
+		decrFile = new File(System.getProperty("user.home") + "/documents/Security App Files/Decrypted Files/File_1." + file1.getPath().substring(dot + 1));
+
 		int i;
 		byte[] b = new byte[1024];
 		while ((i = is.read(b)) != -1) {
 			os.write(b, 0, i);
 		}
-		//System.out.println("File decrypted");
+		// System.out.println("File decrypted");
 		is.close();
 		os.close();
 	}
@@ -124,74 +115,71 @@ public class Decrypt {
 	public void decryptAES(String file2) throws IOException, InvalidKeyException {
 		// read AES key
 		pkCipher.init(Cipher.DECRYPT_MODE, priv);
-		//AES_Key_Size / 8 --> 128 bit / 8 = 16 bytes
+		// AES_Key_Size / 8 --> 128 bit / 8 = 16 bytes
 		aesKey = new byte[AES_Key_Size / 8];
-		
+
 		CipherInputStream is = new CipherInputStream(new FileInputStream(file2), pkCipher);
 		is.read(aesKey);
-		
-		//Constructs a secret key from the given byte array. 
+
+		// Constructs a secret key from the given byte array.
 		aeskeySpec = new SecretKeySpec(aesKey, "AES");
 		key = aeskeySpec;
-		//System.out.println("AES encrypted");
+		// System.out.println("AES encrypted");
 		is.close();
 	}
-	
+
 	@SuppressWarnings("resource")
 	// Method generates a hash of the file you're encrypting
 	// (tested and works)
-	public String generateHash(String datafile) {
+	public String generateHash() throws IOException, NoSuchAlgorithmException {
+		String datafile = decrFile.getAbsolutePath();
 		StringBuffer sb = new StringBuffer("");
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			FileInputStream fis = new FileInputStream(datafile);
-			byte[] dataBytes = new byte[1024];
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		FileInputStream fis = new FileInputStream(datafile);
+		byte[] dataBytes = new byte[1024];
 
-			int nread = 0;
+		int nread = 0;
 
-			while ((nread = fis.read(dataBytes)) != -1) {
-				md.update(dataBytes, 0, nread);
-			}
-
-			byte[] mdbytes = md.digest();
-
-			// convert the byte to hex format
-
-			for (int i = 0; i < mdbytes.length; i++) {
-				sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
-			}
-			hash = sb.toString();
-			System.out.println("Digest(in hex format):: " + hash);
-		} catch (Exception e) {
-			e.printStackTrace();
+		while ((nread = fis.read(dataBytes)) != -1) {
+			md.update(dataBytes, 0, nread);
 		}
+
+		byte[] mdbytes = md.digest();
+
+		// convert the byte to hex format
+
+		for (int i = 0; i < mdbytes.length; i++) {
+			sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+		}
+		hash = sb.toString();
+		// System.out.println("Digest(in hex format):: " + hash);
 		return sb.toString();
 	}
 
 	// Method decrypts the hash
 	// (tested and works)
-	public void decryptHash(String file3path, String publicKeyFile) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, FileNotFoundException, IOException {
+	public void decryptHash(String file3path, String publicKeyFile) throws NoSuchAlgorithmException, IOException, InvalidKeyException {
 		MessageDigest md = MessageDigest.getInstance("MD5");
-		//The length of the hash that was created
+		// The length of the hash that was created
 		hashKey = new byte[32];
-		
+
 		pkCipher.init(Cipher.DECRYPT_MODE, pub);
-		
-		//Read the hash from the encrypted file (File_3)
+
+		// Read the hash from the encrypted file (File_3)
 		CipherInputStream is = new CipherInputStream(new FileInputStream(ENCRYPTED_HASH), pkCipher);
 		is.read(hashKey);
 		dHash = new String(hashKey);
-		
-		//System.out.println("Hash decrypted");
-		System.out.println("Digest(in hex format):: " + dHash);
+
+		// System.out.println("Hash decrypted");
+		//System.out.println("Digest(in hex format):: " + dHash);
 		is.close();
 	}
-	
+
 	public void compareHash() {
 		if (hash.equals(dHash)) {
-			System.out.println("Hash of file is authentic");
+			JOptionPane.showMessageDialog(null, "Comparing hashes successful, hashes are authentic. Decrypting successful", "Compare hashes", JOptionPane.PLAIN_MESSAGE);
 		} else {
-			System.out.println("Fuck you");
+			JOptionPane.showMessageDialog(null, "Comparing hashes unsuccessful, hashes are not authentic. Decrypting unsuccessful", "Compare hashes failed", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }

@@ -4,27 +4,29 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Scanner;
+import java.io.StringReader;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 public class Steganography {
 
 	private final int MAX_INT_LEN = 4;
 	private final int DATA_SIZE = 8;
-	
+
 	public final String ENCRYPTED_MESSAGE = System.getProperty("user.home") + "/documents/Security App Files/Encrypted Steganography Files/";
 	public final String DECRYPTED_MESSAGE = System.getProperty("user.home") + "/documents/Security App Files/Decrypted Steganography Files/";
 
-	
 	// --------------------------- hide a message -----------------------------------
-	
+
 	public boolean hide(String textFnm, String imFnm) {
 		String inputText = readTextFile(textFnm);
+		// System.out.println(inputText);
 		if ((inputText == null) || (inputText.length() == 0))
 			return false;
 
@@ -35,14 +37,15 @@ public class Steganography {
 			return false;
 		byte imBytes[] = accessBytes(im);
 
-		if (!singleHide(imBytes, stego))
+		if (!singleHide(imBytes, stego)) {
 			return false;
+		}
 
 		File file = new File(imFnm);
 
-		//int dot = file.getName().lastIndexOf(".");
-		
-		//String fnm = file.getName().substring(0, dot);
+		// int dot = file.getName().lastIndexOf(".");
+
+		// String fnm = file.getName().substring(0, dot);
 		String fnm = file.getName();
 		return writeImageToFile(ENCRYPTED_MESSAGE + fnm, im);
 	}
@@ -54,21 +57,23 @@ public class Steganography {
 		try {
 			br = new BufferedReader(new FileReader(new File(fnm)));
 			String text = null;
-			while ((text = br.readLine()) != null)
+			while ((text = br.readLine()) != null) {
 				sb.append(text + "\n");
+			}
 		} catch (Exception e) {
-			System.out.println("Could not completely read " + fnm);
+			// System.out.println("Could not completely read " + fnm);
 			return null;
 		} finally {
 			try {
-				if (br != null)
+				if (br != null) {
 					br.close();
+				}
 			} catch (IOException e) {
-				System.out.println("Problem closing " + fnm);
+				// System.out.println("Problem closing " + fnm);
 				return null;
 			}
 		}
-		System.out.println("Read in " + fnm);
+		// System.out.println("Read in " + fnm);
 		return sb.toString();
 	}
 
@@ -100,9 +105,9 @@ public class Steganography {
 		BufferedImage im = null;
 		try {
 			im = ImageIO.read(new File(imFnm));
-			System.out.println("Read " + imFnm);
+			// System.out.println("Read " + imFnm);
 		} catch (IOException e) {
-			System.out.println("Could not read image from " + imFnm);
+			// System.out.println("Could not read image from " + imFnm);
 		}
 
 		return im;
@@ -110,19 +115,20 @@ public class Steganography {
 
 	private byte[] accessBytes(BufferedImage image) {
 		WritableRaster raster = image.getRaster();
+		// System.out.println(raster);
 		DataBufferByte buffer = (DataBufferByte) raster.getDataBuffer();
 		return buffer.getData();
 	}
 
 	private boolean singleHide(byte[] imBytes, byte[] stego) {
 		int imLen = imBytes.length;
-		System.out.println("Byte length of image: " + imLen);
+		// System.out.println("Byte length of image: " + imLen);
 
 		int totalLen = stego.length;
-		System.out.println("Total byte length of message: " + totalLen);
+		// System.out.println("Total byte length of message: " + totalLen);
 
 		if ((totalLen * DATA_SIZE) > imLen) {
-			System.out.println("Image not big enough for message");
+			// System.out.println("Image not big enough for message");
 			return false;
 		}
 
@@ -142,33 +148,38 @@ public class Steganography {
 	}
 
 	private boolean writeImageToFile(String outFnm, BufferedImage im) {
-		if (!canOverWrite(outFnm))
+		if (!canOverWrite(outFnm)) {
 			return false;
+		}
+
+		File file = new File(outFnm);
+		int dot = file.getName().lastIndexOf(".");
+		String fnm = file.getName().substring(dot + 1);
+
+		// System.out.println(fnm);
 
 		try {
-			ImageIO.write(im, "png", new File(outFnm));
-			System.out.println("Image written to PNG file: " + outFnm);
+			ImageIO.write(im, fnm, new File(outFnm));
+			// System.out.println("Image written to PNG file: " + outFnm);
 			return true;
 		} catch (IOException e) {
-			System.out.println("Could not write image to " + outFnm);
+			// System.out.println("Could not write image to " + outFnm);
 			return false;
 		}
 	}
 
 	private boolean canOverWrite(String fnm) {
 		File f = new File(fnm);
-		if (!f.exists())
+		if (!f.exists()) {
 			return true;
-		Scanner in = new Scanner(System.in);
-		String response;
-		System.out.print("File " + fnm + " already exists. ");
+		}
 		while (true) {
-			System.out.print("Overwrite (y|n)? ");
-			response = in.nextLine().trim().toLowerCase();
-			if (response.startsWith("n")) // no
+			int dialogResult = JOptionPane.showConfirmDialog(null, "Encrypted file already exists. Overwrite?", "Overwrite", JOptionPane.YES_NO_OPTION);
+			if (dialogResult == JOptionPane.NO_OPTION) {
 				return false;
-			else if (response.startsWith("y")) // yes
+			} else if (dialogResult == JOptionPane.YES_OPTION) {
 				return true;
+			}
 		}
 	}
 
@@ -180,22 +191,22 @@ public class Steganography {
 		if (im == null)
 			return false;
 		byte[] imBytes = accessBytes(im);
-		System.out.println("Byte length of image: " + imBytes.length);
+		// System.out.println("Byte length of image: " + imBytes.length);
 		int msgLen = getMsgLength(imBytes, 0);
 		if (msgLen == -1)
 			return false;
-		System.out.println("Byte length of message: " + msgLen);
+		// System.out.println("Byte length of message: " + msgLen);
 
 		String msg = getMessage(imBytes, msgLen, MAX_INT_LEN * DATA_SIZE);
 		if (msg != null) {
 			File file = new File(imFnm);
 
 			int dot = file.getName().lastIndexOf(".");
-			
+
 			String fnm = file.getName().substring(0, dot);
 			return writeStringToFile(DECRYPTED_MESSAGE + fnm + ".txt", msg);
 		} else {
-			System.out.println("No message found");
+			// System.out.println("No message found");
 			return false;
 		}
 	}
@@ -206,9 +217,9 @@ public class Steganography {
 			return -1;
 
 		int msgLen = ((lenBytes[0] & 0xff) << 24) | ((lenBytes[1] & 0xff) << 16) | ((lenBytes[2] & 0xff) << 8) | (lenBytes[3] & 0xff);
-
+		//System.out.println(msgLen + " " + imBytes.length);
 		if ((msgLen <= 0) || (msgLen > imBytes.length)) {
-			System.out.println("Incorrect message length");
+			//System.out.println("Incorrect message length");
 			return -1;
 		}
 
@@ -222,16 +233,20 @@ public class Steganography {
 
 		String msg = new String(msgBytes);
 
+		//System.out.println(msg);
+
 		if (isPrintable(msg)) {
 			return msg;
-		} else
+		} else {
 			return null;
+		}
 	}
 
 	private byte[] extractHiddenBytes(byte[] imBytes, int size, int offset) {
 		int finalPosn = offset + (size * DATA_SIZE);
+		//System.out.println(finalPosn);
 		if (finalPosn > imBytes.length) {
-			System.out.println("End of image reached");
+			//System.out.println("End of image reached");
 			return null;
 		}
 
@@ -249,7 +264,7 @@ public class Steganography {
 	private boolean isPrintable(String str) {
 		for (int i = 0; i < str.length(); i++)
 			if (!isPrintable(str.charAt(i))) {
-				System.out.println("Unprintable character found");
+				// System.out.println("Unprintable character found");
 				return false;
 			}
 		return true;
@@ -269,14 +284,48 @@ public class Steganography {
 			return false;
 
 		try {
-			FileWriter out = new FileWriter(new File(outFnm));
-			out.write(msgStr);
-			out.close();
-			System.out.println("Message written to " + outFnm);
+			StringReader stringReader = new StringReader(msgStr);
+			BufferedReader bufferedReader = new BufferedReader(stringReader);
+			FileWriter fileWriter = new FileWriter(new File(outFnm));
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			for (String line = bufferedReader.readLine(); line != null; line = bufferedReader.readLine()) {
+				bufferedWriter.write(line);
+				bufferedWriter.newLine();
+			}
+			bufferedReader.close();
+			bufferedWriter.close();
+			// FileWriter out = new FileWriter(new File(outFnm));
+			// out.write(msgStr);
+			// out.close();
+			// System.out.println("Message written to " + outFnm);
 			return true;
 		} catch (IOException e) {
-			System.out.println("Could not write message to " + outFnm);
+			// System.out.println("Could not write message to " + outFnm);
 			return false;
 		}
+	}
+
+	public boolean isImage(String image) {
+		boolean match;
+		int dot = image.lastIndexOf(".");
+		String fnm = image.substring(dot + 1);
+		if (fnm.equals("png") || fnm.equals("gif") || fnm.equals("bmp") || fnm.equals("PNG") || fnm.equals("GIF") || fnm.equals("BMP")) {
+			match = true;
+		} else {
+			match = false;
+		}
+		return match;
+	}
+
+	public boolean isTxt(String txtFile) {
+		boolean match;
+		int dot = txtFile.lastIndexOf(".");
+		String fnm = txtFile.substring(dot + 1);
+		if (fnm.equals("txt")) {
+			match = true;
+		} else {
+			match = false;
+		}
+		return match;
 	}
 }

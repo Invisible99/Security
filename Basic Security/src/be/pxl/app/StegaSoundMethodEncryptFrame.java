@@ -9,12 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
@@ -33,9 +32,6 @@ public class StegaSoundMethodEncryptFrame {
 
 	private JLabel soundChooserLbl;
 	private JLabel textFileChooserLbl;
-	private JLabel passwdLbl;
-	
-	private JTextField passwdTxtField;
 
 	private JFileChooser fileChooser;
 
@@ -51,16 +47,13 @@ public class StegaSoundMethodEncryptFrame {
 
 		soundChooserLbl = new JLabel();
 		textFileChooserLbl = new JLabel();
-		passwdLbl = new JLabel("Choose a password");
-		
-		passwdTxtField = new JTextField();
 
 		frame = new AppFrame();
 
 		frame.pnl.setLayout(new BorderLayout());
 
 		btnPnl = new JPanel();
-		btnPnl.setLayout(new GridLayout(3, 3, 10, 10));
+		btnPnl.setLayout(new GridLayout(2, 2, 10, 10));
 		btnPnl.setBackground(new Color(71, 62, 63));
 
 		okBtnPnl = new JPanel();
@@ -97,14 +90,6 @@ public class StegaSoundMethodEncryptFrame {
 		soundChooserLbl.setHorizontalAlignment(SwingConstants.CENTER);
 		textFileChooserLbl.setForeground(new Color(108, 206, 203));
 		textFileChooserLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		passwdLbl.setForeground(new Color(108, 206, 203));
-		passwdLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		
-		//passwdTxtField.setBorder(BorderFactory.createEmptyBorder());
-		passwdTxtField.setBorder(BorderFactory.createLineBorder(new Color(108, 206, 203)));
-		passwdTxtField.setBackground(new Color(71, 62, 63));
-		passwdTxtField.setHorizontalAlignment(SwingConstants.CENTER);
-		passwdTxtField.setForeground(new Color(108, 206, 203));
 
 		// btnPnl.add(fileChooser);
 		btnPnl.add(soundChooserBtn);
@@ -113,8 +98,6 @@ public class StegaSoundMethodEncryptFrame {
 		btnPnl.add(textFileChooserBtn);
 		btnPnl.add(textFileChooserLbl);
 		// btnPnl.add(privateKeyChooser);
-		btnPnl.add(passwdLbl);
-		btnPnl.add(passwdTxtField);
 
 		okBtnPnl.add(okBtn);
 
@@ -138,13 +121,14 @@ public class StegaSoundMethodEncryptFrame {
 					try {
 						soundName = file.toString();
 						soundChooserLbl.setText(file.getName());
-						outputDirName += file.getName(); 
+						outputDirName += file.getName();
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing audio file" + file.getAbsolutePath(), "Audio file error", JOptionPane.ERROR_MESSAGE);
+						// System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
-			} 
-			
+			}
+
 			if (e.getSource() == textFileChooserBtn) {
 				fileChooser = new JFileChooser();
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
@@ -156,19 +140,36 @@ public class StegaSoundMethodEncryptFrame {
 						textFileName = file.toString();
 						textFileChooserLbl.setText(file.getName());
 					} catch (Exception ex) {
-						System.out.println("problem accessing file" + file.getAbsolutePath());
+						JOptionPane.showMessageDialog(null, "Problem accessing text file" + file.getAbsolutePath(), "Text file error", JOptionPane.ERROR_MESSAGE);
+						// System.out.println("problem accessing file" + file.getAbsolutePath());
 					}
 				}
-			} 
-			
+			}
+
 			if (e.getSource() == okBtn) {
-				if (soundName == null || textFileName == null) {					
-					System.out.println("Add all files");
+				if (soundName == null || textFileName == null) {
+					// System.out.println("Add all files");
+					JOptionPane.showMessageDialog(null, "Add all needed files", "File error", JOptionPane.ERROR_MESSAGE);
 				} else {
-					SoundStega soundStega = new SoundStega(soundName, textFileName, outputDirName, passwdTxtField.getText().toCharArray());
-					soundStega.encode();
-					frame.dispose();
-					new BeginFrame();
+					try {
+						//SoundStega soundStega = new SoundStega(soundName, textFileName, outputDirName, passwdTxtField.getText().toCharArray());
+						SoundStega soundStega = new SoundStega(soundName, textFileName, outputDirName);
+						if (soundStega.isAu(soundName)) {
+							if (soundStega.isTxt(textFileName)) {
+								soundStega.encode();
+
+								JOptionPane.showMessageDialog(null, "Hiding text in audio successful", "Encryption message", JOptionPane.PLAIN_MESSAGE);
+								frame.dispose();
+								new BeginFrame();
+							} else {
+								JOptionPane.showMessageDialog(null, "File chosen is not a text with extension '.txt'", "Text file error", JOptionPane.ERROR_MESSAGE);
+							}
+						} else {
+							JOptionPane.showMessageDialog(null, "File chosen is not an audio with extension '.au'", "Audio file error", JOptionPane.ERROR_MESSAGE);
+						}
+					} catch (Exception e1) {
+						JOptionPane.showMessageDialog(null, "Failed to encrypt message from audio file", "Encryption error", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		}

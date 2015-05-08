@@ -26,6 +26,7 @@ public class GenerateRSA {
 	private String stegaEncrDir = System.getProperty("user.home") + "/documents/Security App Files/Encrypted Steganography Files";
 	private String stegaDecrDir = System.getProperty("user.home") + "/documents/Security App Files/Decrypted Steganography Files";
 
+	@SuppressWarnings("unused")
 	private boolean success = false;
 
 	public GenerateRSA() {
