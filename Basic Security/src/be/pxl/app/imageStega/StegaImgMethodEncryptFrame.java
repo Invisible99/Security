@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.imageStega;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,6 +18,9 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import be.pxl.app.main.AppFrame;
+import be.pxl.app.main.BeginFrame;
 
 public class StegaImgMethodEncryptFrame {
 

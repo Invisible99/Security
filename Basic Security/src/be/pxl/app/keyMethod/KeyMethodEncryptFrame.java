@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.keyMethod;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +16,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import be.pxl.app.main.AppFrame;
+import be.pxl.app.main.BeginFrame;
 
 public class KeyMethodEncryptFrame {
 

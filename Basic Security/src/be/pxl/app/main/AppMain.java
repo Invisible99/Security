@@ -1,4 +1,6 @@
-package be.pxl.app;
+package be.pxl.app.main;
+
+import be.pxl.app.keyMethod.GenerateRSA;
 
 public class AppMain {
 

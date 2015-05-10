@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.soundStega;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,6 +19,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import be.pxl.app.main.AppFrame;
+import be.pxl.app.main.BeginFrame;
+
 public class StegaSoundMethodDecryptFrame {
 
 	private AppFrame frame;
@@ -34,7 +37,7 @@ public class StegaSoundMethodDecryptFrame {
 	private JFileChooser fileChooser;
 
 	private String soundName;
-	private String outputDirName = System.getProperty("user.home") + "/documents/Security App Files/Decrypted Steganography Files/";
+	private String outputDirName;
 
 	public StegaSoundMethodDecryptFrame() {
 
@@ -99,6 +102,7 @@ public class StegaSoundMethodDecryptFrame {
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
+					outputDirName = System.getProperty("user.home") + "/documents/Security App Files/Decrypted Steganography Files/";
 					try {
 						soundName = file.toString();
 						soundChooserLbl.setText(file.getName());

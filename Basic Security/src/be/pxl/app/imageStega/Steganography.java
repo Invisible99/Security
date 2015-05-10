@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.imageStega;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;

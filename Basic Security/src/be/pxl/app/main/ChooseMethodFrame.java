@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,6 +12,13 @@ import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import be.pxl.app.imageStega.StegaImgMethodDecryptFrame;
+import be.pxl.app.imageStega.StegaImgMethodEncryptFrame;
+import be.pxl.app.keyMethod.KeyMethodDecryptFrame;
+import be.pxl.app.keyMethod.KeyMethodEncryptFrame;
+import be.pxl.app.soundStega.StegaSoundMethodDecryptFrame;
+import be.pxl.app.soundStega.StegaSoundMethodEncryptFrame;
 
 public class ChooseMethodFrame {
 

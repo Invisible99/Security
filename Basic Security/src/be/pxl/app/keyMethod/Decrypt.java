@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.keyMethod;
 
 import java.io.File;
 import java.io.FileInputStream;

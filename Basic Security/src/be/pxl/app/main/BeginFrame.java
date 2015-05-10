@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.main;
 
 import java.awt.Color;
 import java.awt.Dimension;

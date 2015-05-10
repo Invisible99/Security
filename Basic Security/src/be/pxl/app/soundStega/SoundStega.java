@@ -1,5 +1,5 @@
 //************************************************
-package be.pxl.app;
+package be.pxl.app.soundStega;
 
 // Stego.java
 //************************************************
@@ -8,11 +8,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.crypto.spec.PBEKeySpec;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 class SoundStega {
 	public boolean feasible = true;
@@ -24,19 +26,19 @@ class SoundStega {
 	PBEKeySpec pbeKeySpec;
 
 	// Constructor for encrypting
-	public SoundStega(String sndFile, String ptFile, String oFile) {
+	public SoundStega(String sndFile, String ptFile, String oFile) throws UnsupportedAudioFileException, IOException {
 		outFile = oFile;
 		readSND(sndFile);
 		feasible = possible(ptFile);
 	}
 
 	// Constructor for decrypting
-	public SoundStega(String sndFile, String ptFile) {
+	public SoundStega(String sndFile, String ptFile) throws UnsupportedAudioFileException, IOException {
 		outFile = ptFile;
 		readSND(sndFile);
 	}
 
-	public void encode() {
+	public void encode() throws IOException {
 
 		int k = 0;
 		int i = 1; // start of plaintext in audioBytes
@@ -79,23 +81,18 @@ class SoundStega {
 		ByteArrayInputStream byteIS = new ByteArrayInputStream(audioBytes);
 		AudioInputStream audioIS = new AudioInputStream(byteIS, audioInputStream.getFormat(), audioInputStream.getFrameLength());
 		if (AudioSystem.isFileTypeSupported(AudioFileFormat.Type.AU, audioIS)) {
-			try {
-				AudioSystem.write(audioIS, AudioFileFormat.Type.AU, fileOut);
-				//System.out.println("Steganographed AU file is written as " + outFile + "...");
-			} catch (Exception e) {
-				e.printStackTrace();
-				//System.err.println("Sound File write error");
-			}
+			AudioSystem.write(audioIS, AudioFileFormat.Type.AU, fileOut);
+			// System.out.println("Steganographed AU file is written as " + outFile + "...");
 		}
 	}
 
-	public boolean decode() {
+	public boolean decode() throws IOException {
 		boolean success = true;
 		byte out = 0;
 		int length = 0;
 		int k = 1; // start of plaintext in audioBytes
 		// System.out.println("Retrieving the ciphertext from AU file ....");
-		
+
 		// First decode the first 32 samples to find the length of the message text
 		length = length & 0x00000000;
 		for (int j = 1; j <= 32; j++) {
@@ -123,74 +120,52 @@ class SoundStega {
 			out = (byte) (out & 0x00);
 
 		}
-		try {
-			// System.out.println("Writing the decrypted hidden message to" + outFile + " ...");
-			FileOutputStream outfile = new FileOutputStream(outFile);
-			// outfile.write(clearbuff);
-			outfile.write(buff);
-			outfile.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			// System.out.println("Caught Exception: " + e);
-		}
+		// System.out.println("Writing the decrypted hidden message to" + outFile + " ...");
+		FileOutputStream outfile = new FileOutputStream(outFile);
+		// outfile.write(clearbuff);
+		outfile.write(buff);
+		outfile.close();
 
 		return success;
 	}
 
 	// Method to read the sound file
-	private void readSND(String sndf) {
+	private void readSND(String sndf) throws UnsupportedAudioFileException, IOException {
 		File sndfile = new File(sndf);
 		int totalFramesRead = 0;
 
 		// System.out.println("Reading (AU) sound file ...");
-		try {
-			audioInputStream = AudioSystem.getAudioInputStream(sndfile);
-			// sndFormat = audioInputStream.getFormat();
-			int bytesPerFrame = audioInputStream.getFormat().getFrameSize();
-			// Set an arbitrary buffer size of 1024 frames.
-			int numBytes = 154600 * bytesPerFrame;
-			audioBytes = new byte[numBytes];
-
-			try {
-				int numBytesRead = 0;
-				int numFramesRead = 0;
-				// Try to read numBytes bytes from the file.
-				while ((numBytesRead = audioInputStream.read(audioBytes)) != -1) {
-					// Calculate the number of frames actually read.
-					numFramesRead = numBytesRead / bytesPerFrame;
-					totalFramesRead += numFramesRead;
-					// Here, work with the audio data that's
-					// now in the audioBytes array...
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				// System.out.println("Audio file error:" + ex);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			// System.out.println("Audio file error:" + e);
+		audioInputStream = AudioSystem.getAudioInputStream(sndfile);
+		// sndFormat = audioInputStream.getFormat();
+		int bytesPerFrame = audioInputStream.getFormat().getFrameSize();
+		// Set an arbitrary buffer size of 1024 frames.
+		int numBytes = 154600 * bytesPerFrame;
+		audioBytes = new byte[numBytes];
+		int numBytesRead = 0;
+		int numFramesRead = 0;
+		// Try to read numBytes bytes from the file.
+		while ((numBytesRead = audioInputStream.read(audioBytes)) != -1) {
+			// Calculate the number of frames actually read.
+			numFramesRead = numBytesRead / bytesPerFrame;
+			totalFramesRead += numFramesRead;
+			// Here, work with the audio data that's
+			// now in the audioBytes array...
 		}
 	}
 
 	// Is it possible to do steganography with current file
-	private boolean possible(String pt) {
+	private boolean possible(String pt) throws IOException {
 		// accessing the input file
-		try {
-			// System.out.println("Reading the plaintext file ..." + pt);
-			FileInputStream fis = new FileInputStream(pt);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			int len = bis.available();
-			buff = new byte[len];
+		// System.out.println("Reading the plaintext file ..." + pt);
+		FileInputStream fis = new FileInputStream(pt);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		int len = bis.available();
+		buff = new byte[len];
 
-			while (bis.available() != 0)
-				len = bis.read(buff);
-			bis.close();
-			fis.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			// System.out.println("Could Not Read Plain Text Caught Exception: " + e);
-		}
+		while (bis.available() != 0)
+			len = bis.read(buff);
+		bis.close();
+		fis.close();
 		return true;
 	}
 

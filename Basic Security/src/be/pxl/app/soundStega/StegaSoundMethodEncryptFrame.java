@@ -1,4 +1,4 @@
-package be.pxl.app;
+package be.pxl.app.soundStega;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,6 +19,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import be.pxl.app.main.AppFrame;
+import be.pxl.app.main.BeginFrame;
+
 public class StegaSoundMethodEncryptFrame {
 
 	private AppFrame frame;
@@ -37,7 +40,7 @@ public class StegaSoundMethodEncryptFrame {
 
 	private String soundName;
 	private String textFileName;
-	private String outputDirName = System.getProperty("user.home") + "/documents/Security App Files/Encrypted Steganography Files/";
+	private String outputDirName;
 
 	public StegaSoundMethodEncryptFrame() {
 
@@ -118,6 +121,7 @@ public class StegaSoundMethodEncryptFrame {
 				int returnVal = fileChooser.showOpenDialog((Component) e.getSource());
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
+					outputDirName = System.getProperty("user.home") + "/documents/Security App Files/Encrypted Steganography Files/";
 					try {
 						soundName = file.toString();
 						soundChooserLbl.setText(file.getName());
@@ -152,7 +156,6 @@ public class StegaSoundMethodEncryptFrame {
 					JOptionPane.showMessageDialog(null, "Add all needed files", "File error", JOptionPane.ERROR_MESSAGE);
 				} else {
 					try {
-						//SoundStega soundStega = new SoundStega(soundName, textFileName, outputDirName, passwdTxtField.getText().toCharArray());
 						SoundStega soundStega = new SoundStega(soundName, textFileName, outputDirName);
 						if (soundStega.isAu(soundName)) {
 							if (soundStega.isTxt(textFileName)) {
